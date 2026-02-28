@@ -2,6 +2,11 @@
 
 GeoIntel is a professional, high-performance web application designed for real-time IPv4 geolocation tracking and network intelligence. Built with a premium "Glassmorphism" UI, it provides detailed insights into network nodes, ISP tiers, and geographical data.
 
+## 🔗 Live Deployment
+
+- **Hosted Version**: [https://jlabs-output.vercel.app/jlabs/login](https://jlabs-output.vercel.app/jlabs/login)
+- **Repository**: [https://github.com/brybryson/jlabs-output.git](https://github.com/brybryson/jlabs-output.git)
+
 ## 🚀 Core Features
 
 -   **Real-time Geolocation**: Instantly map any IPv4 address with detailed city, region, and country data.
@@ -17,7 +22,7 @@ GeoIntel is a professional, high-performance web application designed for real-t
 | :--- | :--- |
 | **Framework** | [Next.js 15+](https://nextjs.org/) (App Router) |
 | **Language** | [TypeScript](https://www.typescriptlang.org/) |
-| **Database** | [PostgreSQL](https://www.postgresql.org/) |
+| **Database** | [Supabase](https://supabase.com/) (PostgreSQL) |
 | **ORM** | [Prisma](https://www.prisma.io/) |
 | **Maps** | [React Leaflet](https://react-leaflet.js.org/) & [OpenStreetMap](https://www.openstreetmap.org/) |
 | **Styling** | [Tailwind CSS 4.0](https://tailwindcss.com/) & Vanilla CSS |
