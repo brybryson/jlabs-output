@@ -47,14 +47,16 @@ export default function Login() {
 
             <form className="space-y-6 relative z-10" onSubmit={handleLogin}>
               <div className="space-y-3">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1" htmlFor="email">Email Address</label>
-                <div className="relative group/input">
+                <div className="flex justify-between items-center ml-1">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest" htmlFor="email">Email Address</label>
+                </div>
+                <div className="relative group/input mb-2">
                   <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-500 group-focus-within/input:text-blue-400 transition-colors">
                     <span className="material-symbols-outlined text-2xl">mail</span>
                   </div>
                   <input
                     className="w-full bg-black/20 border border-white/10 rounded-2xl py-4 md:py-5 pl-14 pr-5 text-lg text-white placeholder:text-slate-600 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 outline-none transition-all focus:bg-white/[0.03]"
-                    id="email" placeholder="admin@geopro.io" type="email" defaultValue="admin@geopro.io" required />
+                    id="email" placeholder="name@example.com" type="email" required />
                 </div>
               </div>
 

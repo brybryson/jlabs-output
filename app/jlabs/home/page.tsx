@@ -48,38 +48,81 @@ export default function Home() {
             background: rgba(255, 255, 255, 0.08);
             border-radius: 10px;
         }
-        #sidebar-toggle:checked ~ aside {
-            width: var(--sidebar-collapsed-width);
+        @media (min-width: 1024px) {
+            #sidebar-toggle:checked ~ aside {
+                width: var(--sidebar-collapsed-width);
+            }
+            #sidebar-toggle:checked ~ aside .expanded-content {
+                opacity: 0;
+                pointer-events: none;
+                width: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: hidden;
+            }
+            #sidebar-toggle:checked ~ aside nav,
+            #sidebar-toggle:checked ~ aside .nav-footer {
+                opacity: 0;
+                pointer-events: none;
+            }
+            aside {
+                transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .expanded-content, nav, .nav-footer {
+                transition: opacity 0.3s ease, width 0.3s ease, margin 0.3s ease, padding 0.3s ease;
+                white-space: nowrap;
+            }
         }
-        #sidebar-toggle:checked ~ aside .expanded-content {
-            opacity: 0;
-            pointer-events: none;
-            width: 0;
+
+        @media (max-width: 1023px) {
+            aside {
+                max-height: 72px;
+                transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s ease;
+                background-color: #080B11;
+                overflow: hidden !important;
+            }
+            #sidebar-toggle:checked ~ aside {
+                max-height: 900px !important;
+                background-color: rgba(8, 11, 17, 0.85) !important;
+                backdrop-filter: blur(16px);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                border-bottom-left-radius: 1rem;
+                border-bottom-right-radius: 1rem;
+                box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
+            }
+            .mobile-menu {
+                opacity: 0;
+                transform: translateY(-10px);
+                transition: opacity 0.3s ease, transform 0.3s ease;
+                pointer-events: none;
+            }
+            #sidebar-toggle:checked ~ aside .mobile-menu {
+                display: flex !important;
+                opacity: 1;
+                transform: translateY(0);
+                pointer-events: auto;
+                transition-delay: 0.1s;
+            }
         }
-        #sidebar-toggle:checked ~ aside .sidebar-footer-btn {
-            justify-content: center;
-            padding: 0.75rem;
-        }
-        #sidebar-toggle:checked ~ aside .sidebar-item-label {
-            display: none;
-        }
+
         .map-overlay-gradient {
             background: radial-gradient(circle at center, transparent 0%, #080B11 120%);
         }
       `}} />
             <div className="flex flex-col lg:flex-row h-screen w-full relative">
                 <input className="hidden" id="sidebar-toggle" type="checkbox" />
-                <aside className="sidebar-transition w-full lg:w-[var(--sidebar-width)] h-[72px] lg:h-full glass-sidebar flex lg:flex-col z-30 relative shrink-0 border-b lg:border-r border-white/5">
-                    <div className="p-4 lg:p-6 flex items-center justify-between lg:justify-start lg:h-20 shrink-0 lg:border-b border-white/5 w-full lg:w-auto">
+                <aside className="sidebar-transition w-full lg:w-[var(--sidebar-width)] h-[72px] lg:h-full glass-sidebar flex flex-col z-40 lg:relative shrink-0 border-b lg:border-r border-white/5 overflow-hidden">
+                    <div className="p-4 lg:p-6 flex items-center justify-between lg:justify-start h-[72px] lg:h-20 shrink-0 border-white/5 w-full bg-[#080B11]/95 lg:bg-transparent relative z-20">
                         <label className="w-10 h-10 bg-blue-500/10 text-blue-500 rounded-lg flex items-center justify-center cursor-pointer hover:bg-blue-500/20 transition-all shrink-0" htmlFor="sidebar-toggle">
-                            <span className="material-symbols-outlined text-2xl">menu_open</span>
+                            <span className="material-symbols-outlined text-2xl">menu</span>
                         </label>
-                        <div className="expanded-content ml-4 transition-opacity duration-300 flex items-center gap-3">
+                        <div className="expanded-content ml-4 flex items-center gap-3">
                             <img src="/logo/ip-logo.png" alt="GeoIntel Logo" className="w-8 h-8 object-contain drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
-                            <h1 className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 whitespace-nowrap uppercase tracking-widest">GeoIntel</h1>
+                            <h1 className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 uppercase tracking-widest">GeoIntel</h1>
                         </div>
                     </div>
-                    <div className="hidden lg:flex flex-1 py-6 overflow-y-auto custom-scrollbar flex-col">
+
+                    <div className="mobile-menu hidden lg:flex flex-1 py-6 lg:overflow-y-auto custom-scrollbar flex-col w-full bg-[#080B11] lg:bg-transparent h-[calc(100vh-72px)] lg:h-auto overflow-hidden">
                         <div className="px-6 mb-4 expanded-content">
                             <div className="flex items-center justify-between">
                                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Recent Activity</span>
@@ -117,12 +160,12 @@ export default function Home() {
                                 <input className="expanded-content rounded border-slate-700 bg-transparent text-blue-500 focus:ring-0 focus:ring-offset-0" type="checkbox" />
                             </div>
                         </nav>
-                    </div>
-                    <div className="hidden lg:block p-4 border-t border-white/5">
-                        <button className="sidebar-footer-btn w-full h-11 flex items-center gap-3 bg-slate-800/30 hover:bg-red-500/10 hover:text-red-400 text-slate-400 rounded-lg transition-all font-bold text-[11px] uppercase tracking-wider">
-                            <span className="material-symbols-outlined text-lg">delete_forever</span>
-                            <span className="expanded-content">Clear Records</span>
-                        </button>
+                        <div className="p-4 mt-auto border-t border-white/5 w-full">
+                            <button className="sidebar-footer-btn w-full h-11 flex items-center gap-3 bg-slate-800/30 hover:bg-red-500/10 hover:text-red-400 text-slate-400 rounded-lg transition-all font-bold text-[11px] uppercase tracking-wider">
+                                <span className="material-symbols-outlined text-lg">delete_forever</span>
+                                <span className="expanded-content">Clear Records</span>
+                            </button>
+                        </div>
                     </div>
                 </aside>
                 <main className="flex-1 flex flex-col p-4 md:p-8 lg:p-12 overflow-y-auto w-full h-[calc(100vh-72px)] lg:h-full">
@@ -133,7 +176,6 @@ export default function Home() {
                             </div>
                             <input className="w-full bg-[#111827] border border-white/5 rounded-2xl py-5 pl-14 pr-52 text-base font-medium text-white focus:ring-2 focus:ring-blue-500/40 outline-none transition-all placeholder:text-slate-600" placeholder="Search IPv4/IPv6 Address..." type="text" defaultValue="8.8.8.8" />
                             <div className="absolute inset-y-0 right-4 flex items-center gap-3">
-                                <span className="hidden md:inline-block px-3 py-1.5 bg-emerald-500/10 text-emerald-500 text-[10px] font-bold tracking-widest border border-emerald-500/20 rounded-md">VALID_IPV4</span>
                                 <button className="bg-blue-600 hover:bg-blue-500 text-white px-5 h-10 rounded-xl font-bold text-xs transition-all uppercase tracking-widest flex items-center gap-2">
                                     Locate <span className="material-symbols-outlined text-lg">explore</span>
                                 </button>
@@ -154,8 +196,8 @@ export default function Home() {
                             </button>
                         </div>
                     </header>
-                    <div className="grid grid-cols-12 gap-4 lg:gap-6 flex-1 min-h-[auto] md:min-h-[650px]">
-                        <div className="col-span-12 xl:col-span-4 bento-container flex flex-col overflow-hidden">
+                    <div className="grid grid-cols-12 gap-4 lg:gap-6 flex-1 min-h-[auto] xl:min-h-[650px]">
+                        <div className="order-2 xl:order-1 col-span-12 xl:col-span-4 bento-container flex flex-col overflow-visible xl:overflow-hidden h-fit xl:h-auto">
                             <div className="p-6 border-b border-white/5 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
@@ -228,7 +270,7 @@ export default function Home() {
                                 </div>
                             </div>
                         </div>
-                        <div className="col-span-12 xl:col-span-8 bento-container relative overflow-hidden flex flex-col min-h-[400px] md:min-h-[500px]">
+                        <div className="order-1 xl:order-2 col-span-12 xl:col-span-8 bento-container relative overflow-hidden flex flex-col min-h-[350px] xl:min-h-[500px]">
                             <div className="absolute top-6 left-6 z-20 space-y-2">
                                 <div className="bg-slate-900/80 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 flex items-center gap-3">
                                     <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.6)]"></div>
