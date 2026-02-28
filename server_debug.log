@@ -39494,3 +39494,55 @@ Error opening a TLS connection: The server does not support SSL connections
 }
 [2026-02-28T18:35:31.537Z] [GEOLOCATION_API] Fetching from ipapi: https://ipapi.co/112.203.36.178/json/
 [2026-02-28T18:35:31.866Z] [GEOLOCATION_API] ipapi success
+[2026-02-28T18:43:31.993Z] [GEOLOCATION_API] GET request for IP: 112.203.36.178
+[2026-02-28T18:43:31.994Z] [GEOLOCATION_API] Fetching from ipinfo: https://ipinfo.io/112.203.36.178/json
+[2026-02-28T18:43:32.342Z] [GEOLOCATION_API] ipinfo failed. Status: 429
+[2026-02-28T18:43:32.344Z] [GEOLOCATION_API] ipinfo error body: {
+  "status": 429,
+  "error": {
+    "title": "Rate limit exceeded",
+    "message": "Sign up at ipinfo.io"
+  }
+}
+[2026-02-28T18:43:32.344Z] [GEOLOCATION_API] Fetching from ipapi: https://ipapi.co/112.203.36.178/json/
+[2026-02-28T18:43:32.755Z] [GEOLOCATION_API] ipapi failed or rate-limited. Trying ip-api.com...
+[2026-02-28T18:43:33.139Z] [GEOLOCATION_API] ip-api.com success
+[2026-02-28T18:43:33.451Z] [GEOLOCATION_API] GET request for IP: 112.203.36.178
+[2026-02-28T18:43:33.451Z] [GEOLOCATION_API] Fetching from ipinfo: https://ipinfo.io/112.203.36.178/json
+[2026-02-28T18:43:33.702Z] [GEOLOCATION_API] ipinfo failed. Status: 429
+[2026-02-28T18:43:33.704Z] [GEOLOCATION_API] ipinfo error body: {
+  "status": 429,
+  "error": {
+    "title": "Rate limit exceeded",
+    "message": "Sign up at ipinfo.io"
+  }
+}
+[2026-02-28T18:43:33.705Z] [GEOLOCATION_API] Fetching from ipapi: https://ipapi.co/112.203.36.178/json/
+[2026-02-28T18:43:33.918Z] [GEOLOCATION_API] ipapi failed or rate-limited. Trying ip-api.com...
+[2026-02-28T18:43:34.096Z] [GEOLOCATION_API] ip-api.com success
+[2026-02-28T18:44:11.057Z] [GEOLOCATION_API] GET request for IP: 112.203.36.178
+[2026-02-28T18:44:11.057Z] [GEOLOCATION_API] Fetching from ipinfo: https://ipinfo.io/112.203.36.178/json
+[2026-02-28T18:44:11.404Z] [GEOLOCATION_API] ipinfo failed. Status: 429
+[2026-02-28T18:44:11.405Z] [GEOLOCATION_API] ipinfo error body: {
+  "status": 429,
+  "error": {
+    "title": "Rate limit exceeded",
+    "message": "Sign up at ipinfo.io"
+  }
+}
+[2026-02-28T18:44:11.405Z] [GEOLOCATION_API] Fetching from ipapi: https://ipapi.co/112.203.36.178/json/
+[2026-02-28T18:44:11.663Z] [GEOLOCATION_API] ipapi failed or rate-limited. Trying ip-api.com...
+[2026-02-28T18:44:12.138Z] [GEOLOCATION_API] ip-api.com success
+[2026-02-28T18:44:12.437Z] [GEOLOCATION_API] GET request for IP: 112.203.36.178
+[2026-02-28T18:44:12.437Z] [GEOLOCATION_API] Fetching from ipinfo: https://ipinfo.io/112.203.36.178/json
+[2026-02-28T18:44:12.679Z] [GEOLOCATION_API] ipinfo failed. Status: 429
+[2026-02-28T18:44:12.679Z] [GEOLOCATION_API] ipinfo error body: {
+  "status": 429,
+  "error": {
+    "title": "Rate limit exceeded",
+    "message": "Sign up at ipinfo.io"
+  }
+}
+[2026-02-28T18:44:12.680Z] [GEOLOCATION_API] Fetching from ipapi: https://ipapi.co/112.203.36.178/json/
+[2026-02-28T18:44:12.890Z] [GEOLOCATION_API] ipapi failed or rate-limited. Trying ip-api.com...
+[2026-02-28T18:44:13.174Z] [GEOLOCATION_API] ip-api.com success

@@ -48,6 +48,7 @@ export default function Home() {
     const [isSearching, setIsSearching] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [networkStatus, setNetworkStatus] = useState('Operational');
+    const [copySuccess, setCopySuccess] = useState(false);
 
     // --- LOGIC ---
 
@@ -172,6 +173,16 @@ export default function Home() {
             if (response.ok) router.push('/jlabs/login');
         } catch (error) {
             console.error('Logout failed:', error);
+        }
+    };
+
+    const handleCopyIp = async (ip: string) => {
+        try {
+            await navigator.clipboard.writeText(ip);
+            setCopySuccess(true);
+            setTimeout(() => setCopySuccess(false), 2000);
+        } catch (err) {
+            console.error('Failed to copy:', err);
         }
     };
 
@@ -664,8 +675,14 @@ export default function Home() {
                                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Public IP Address</p>
                                         <div className="flex items-center gap-3 group flex-wrap">
                                             <span className="text-3xl md:text-4xl font-black text-white tracking-tighter break-all">{ipData.ip}</span>
-                                            <button className="text-slate-600 hover:text-blue-400 transition-colors" title="Copy to clipboard">
-                                                <span className="material-symbols-outlined text-xl">content_copy</span>
+                                            <button
+                                                onClick={() => handleCopyIp(ipData.ip)}
+                                                className={`transition-all duration-300 ${copySuccess ? 'text-emerald-500 scale-110' : 'text-slate-600 hover:text-blue-400'}`}
+                                                title={copySuccess ? 'Copied!' : 'Copy to clipboard'}
+                                            >
+                                                <span className="material-symbols-outlined text-xl">
+                                                    {copySuccess ? 'check_circle' : 'content_copy'}
+                                                </span>
                                             </button>
                                         </div>
                                     </div>
