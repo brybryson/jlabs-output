@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
             debugLog({ status: 'FALLBACK_TO_PG_START' });
             const pool = new pg.Pool({
                 connectionString: process.env.DATABASE_URL,
-                ssl: false
+                ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
             });
 
             try {

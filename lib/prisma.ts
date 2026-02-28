@@ -26,9 +26,9 @@ if (!globalForPrisma.pgPool && connectionString) {
         host: url.hostname,
         port: parseInt(url.port || '5432'),
         database: url.pathname.slice(1),
-        ssl: false,
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
     });
-    debugLog('Pool created with SSL: false');
+    debugLog(`Pool created with SSL: ${process.env.NODE_ENV === 'production'}`);
 }
 
 const adapter = new PrismaPg(globalForPrisma.pgPool);

@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
         // --- FALLBACK TO DIRECT PG ---
         const pool = new pg.Pool({
             connectionString: process.env.DATABASE_URL,
-            ssl: false
+            ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
         });
         try {
             logToFile(`FALLBACK_QUERY_START`);
@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
         // --- FALLBACK TO DIRECT PG ---
         const pool = new pg.Pool({
             connectionString: process.env.DATABASE_URL,
-            ssl: false
+            ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
         });
         try {
             logToFile(`POST_FALLBACK_QUERY_START`);
@@ -188,7 +188,7 @@ export async function DELETE(req: NextRequest) {
         // --- FALLBACK TO DIRECT PG ---
         const pool = new pg.Pool({
             connectionString: process.env.DATABASE_URL,
-            ssl: false
+            ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
         });
         try {
             logToFile(`DELETE_FALLBACK_QUERY_START`);

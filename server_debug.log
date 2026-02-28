@@ -39212,3 +39212,31 @@ Error opening a TLS connection: The server does not support SSL connections
 [2026-02-28T15:29:06.851Z] [GEOLOCATION_API] ipapi failed or rate-limited. Trying ip-api.com...
 [2026-02-28T15:29:07.215Z] [GEOLOCATION_API] ip-api.com success
 [2026-02-28T15:29:07.243Z] [HISTORY_API] POST_UPDATE: Reusing IP 112.203.36.178 for user 1
+[2026-02-28T17:32:44.696Z] [GEOLOCATION_API] GET request for IP: 112.203.36.178
+[2026-02-28T17:32:44.697Z] [GEOLOCATION_API] Fetching from ipinfo: https://ipinfo.io/112.203.36.178/json
+[2026-02-28T17:32:45.653Z] [GEOLOCATION_API] ipinfo failed. Status: 429
+[2026-02-28T17:32:45.654Z] [GEOLOCATION_API] ipinfo error body: {
+  "status": 429,
+  "error": {
+    "title": "Rate limit exceeded",
+    "message": "Sign up at ipinfo.io"
+  }
+}
+[2026-02-28T17:32:45.655Z] [GEOLOCATION_API] Fetching from ipapi: https://ipapi.co/112.203.36.178/json/
+[2026-02-28T17:32:46.027Z] [GEOLOCATION_API] ipapi failed or rate-limited. Trying ip-api.com...
+[2026-02-28T17:32:46.385Z] [GEOLOCATION_API] ip-api.com success
+[2026-02-28T17:32:46.415Z] [HISTORY_API] POST_UPDATE: Reusing IP 112.203.36.178 for user 1
+[2026-02-28T17:42:33.050Z] [GEOLOCATION_API] GET request for IP: 112.203.36.178
+[2026-02-28T17:42:33.050Z] [GEOLOCATION_API] Fetching from ipinfo: https://ipinfo.io/112.203.36.178/json
+[2026-02-28T17:42:33.385Z] [GEOLOCATION_API] ipinfo failed. Status: 429
+[2026-02-28T17:42:33.386Z] [GEOLOCATION_API] ipinfo error body: {
+  "status": 429,
+  "error": {
+    "title": "Rate limit exceeded",
+    "message": "Sign up at ipinfo.io"
+  }
+}
+[2026-02-28T17:42:33.387Z] [GEOLOCATION_API] Fetching from ipapi: https://ipapi.co/112.203.36.178/json/
+[2026-02-28T17:42:33.793Z] [GEOLOCATION_API] ipapi failed or rate-limited. Trying ip-api.com...
+[2026-02-28T17:42:34.310Z] [GEOLOCATION_API] ip-api.com success
+[2026-02-28T17:42:34.331Z] [HISTORY_API] POST_UPDATE: Reusing IP 112.203.36.178 for user 1
