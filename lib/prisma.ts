@@ -1,15 +1,8 @@
 import pg from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
-import fs from 'fs';
-import path from 'path';
 
 const { Pool } = pg;
-
-function debugLog(msg: string) {
-    const logPath = path.join(process.cwd(), 'server_debug.log');
-    fs.appendFileSync(logPath, `[PRISMA_INIT] ${new Date().toISOString()} ${msg}\n`);
-}
 
 const globalForPrisma = global as unknown as {
     prisma: PrismaClient | undefined;
@@ -18,25 +11,41 @@ const globalForPrisma = global as unknown as {
 
 const connectionString = process.env.DATABASE_URL;
 
-if (!globalForPrisma.pgPool && connectionString) {
-    const url = new URL(connectionString);
-    globalForPrisma.pgPool = new Pool({
-        user: url.username,
-        password: decodeURIComponent(url.password),
-        host: url.hostname,
-        port: parseInt(url.port || '5432'),
-        database: url.pathname.slice(1),
-        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-    });
-    debugLog(`Pool created with SSL: ${process.env.NODE_ENV === 'production'}`);
+function getPrismaClient() {
+    // If no connection string, return a standard client (it will fail anyway, but won't crash the module)
+    if (!connectionString) {
+        console.warn('DATABASE_URL is not defined');
+        return new PrismaClient();
+    }
+
+    try {
+        if (!globalForPrisma.pgPool) {
+            const url = new URL(connectionString);
+            globalForPrisma.pgPool = new Pool({
+                user: url.username,
+                password: decodeURIComponent(url.password),
+                host: url.hostname,
+                port: parseInt(url.port || '5432'),
+                database: url.pathname.slice(1),
+                ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+                max: 10,
+                idleTimeoutMillis: 30000,
+                connectionTimeoutMillis: 2000,
+            });
+
+            globalForPrisma.pgPool.on('error', (err: any) => {
+                console.error('Unexpected error on idle client', err);
+            });
+        }
+
+        const adapter = new PrismaPg(globalForPrisma.pgPool);
+        return new PrismaClient({ adapter });
+    } catch (err) {
+        console.error('Failed to initialize Prisma with adapter, falling back to standard client', err);
+        return new PrismaClient();
+    }
 }
 
-const adapter = new PrismaPg(globalForPrisma.pgPool);
-
-export const prisma =
-    globalForPrisma.prisma ||
-    new PrismaClient({
-        adapter,
-    });
+export const prisma = globalForPrisma.prisma || getPrismaClient();
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
