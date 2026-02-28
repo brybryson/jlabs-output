@@ -277,13 +277,14 @@ export default function Home() {
             --radius-main: 1rem;
         }
         .sidebar-transition {
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .glass-sidebar {
             background: var(--glass-bg);
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(16px);
             border-right: 1px solid var(--border-subtle);
-            transition: background-color 0.4s ease, backdrop-filter 0.4s ease, width 0.4s cubic-bezier(0.4, 0, 0.2, 1), max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: background-color 0.4s ease, width 0.4s cubic-bezier(0.4, 0, 0.2, 1), max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: width, transform;
         }
         .bento-container {
             background: var(--card-bg);
@@ -377,11 +378,12 @@ export default function Home() {
                 width: 100% !important;
                 height: 100% !important;
                 background-color: rgba(13, 18, 28, 0.98);
-                backdrop-filter: blur(40px);
+                backdrop-filter: blur(16px);
                 transform: translateX(-100%);
                 transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
                 z-index: 1100;
                 border-right: 1px solid rgba(255, 255, 255, 0.1);
+                will-change: transform;
             }
             #sidebar-toggle:checked ~ aside {
                 transform: translateX(0);
@@ -408,8 +410,8 @@ export default function Home() {
                 padding: 0 1.5rem;
                 align-items: center;
                 justify-content: space-between;
-                background: rgba(8, 11, 17, 0.9);
-                backdrop-filter: blur(25px);
+                background: rgba(8, 11, 17, 0.85);
+                backdrop-filter: blur(12px);
                 border-bottom: 1px solid rgba(255, 255, 255, 0.08);
                 z-index: 1000;
             }

@@ -72,8 +72,8 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-[#030712] text-slate-200 font-sans overflow-hidden relative">
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/30 via-black to-blue-900/20"></div>
-        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-blue-600/20 rounded-full blur-[140px] animate-pulse mix-blend-screen"></div>
-        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-purple-600/20 rounded-full blur-[140px] animate-pulse mix-blend-screen" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-blue-600/15 rounded-full blur-[80px] animate-pulse will-change-[opacity]"></div>
+        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-purple-600/15 rounded-full blur-[80px] animate-pulse will-change-[opacity]" style={{ animationDelay: '1s' }}></div>
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
       </div>
 
