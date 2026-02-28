@@ -1,52 +1,92 @@
-# JLabs Exam Project - Next.js + PostgreSQL
+# GeoIntel - Advanced Geolocation Intelligence System
 
-This project uses Next.js as the full-stack framework and PostgreSQL for the database to power the login and IP geolocation features.
+GeoIntel is a professional, high-performance web application designed for real-time IPv4 geolocation tracking and network intelligence. Built with a premium "Glassmorphism" UI, it provides detailed insights into network nodes, ISP tiers, and geographical data.
 
-## Step-by-Step Setup Guide
+## 🚀 Core Features
 
-Follow these steps to set up the project locally on your machine.
+-   **Real-time Geolocation**: Instantly map any IPv4 address with detailed city, region, and country data.
+-   **Interactive Satellite View**: High-performance interactive maps with smooth "Fly-To" transitions.
+-   **Network Intelligence**: Deep-dive into ISP information, ASN details, and network stability metrics.
+-   **Persistence & History**: Securely store and manage your search history with a PostgreSQL backend.
+-   **Premium UI/UX**: Optimized for all devices with a fluid "Slide-Over" sidebar and motion-optimized interfaces.
+-   **Chrome Optimized**: Performance-tuned to ensure stability and speed on Google Chrome and Safari.
 
-### 1. Install Dependencies
-Run the following command to install all required libraries (including Prisma, bcrypt, etc.):
+## 🛠️ Technology Stack
+
+| Layer | Technology |
+| :--- | :--- |
+| **Framework** | [Next.js 15+](https://nextjs.org/) (App Router) |
+| **Language** | [TypeScript](https://www.typescriptlang.org/) |
+| **Database** | [PostgreSQL](https://www.postgresql.org/) |
+| **ORM** | [Prisma](https://www.prisma.io/) |
+| **Maps** | [React Leaflet](https://react-leaflet.js.org/) & [OpenStreetMap](https://www.openstreetmap.org/) |
+| **Styling** | [Tailwind CSS 4.0](https://tailwindcss.com/) & Vanilla CSS |
+| **Auth** | JWT-based session management (`jose`) |
+| **Icons** | [Google Material Symbols](https://fonts.google.com/icons) |
+
+## 📦 Setup & Installation
+
+### 1. Prerequisite
+Ensure you have **Node.js 18+** and a **PostgreSQL** instance running locally or in the cloud.
+
+### 2. Install Dependencies
 ```bash
 npm install
 ```
 
-### 2. Set Up Environment Variables
-Create a file named `.env` in the root of the project and add your PostgreSQL database connection URL. It should look something like this:
+### 3. Environment Configuration
+Create a `.env` file in the root directory:
 ```env
+# Database Connection (Example for local Postgres)
 DATABASE_URL="postgres://macbookpro@localhost:5432/jlabs_exam?sslmode=disable"
-```
-*(Replace `macbookpro` and `jlabs_exam` with your actual local Postgres user and database if different.)*
 
-### 3. Initialize the Database Schema (Prisma)
-Once your `.env` is set up, map the database tables by running:
+# Secret for JWT
+JWT_SECRET="your_secure_random_secret_here"
+```
+
+### 4. Database Initialization
+Map the schema to your database:
 ```bash
 npx prisma db push
 ```
 
-### 4. Run the User Seeder
-This project includes a seeder that automatically creates a test user. Run it using:
+### 5. Seeding Test Data
+Initialize the database with the core test account:
 ```bash
-npx prisma db seed
+npm run seed
 ```
-This will create a user with:
+**Default Credentials:**
 - **Email**: `test@example.com`
 - **Password**: `password123`
 
-*(Note: On the hosted Vercel version, you can simply click the **"Seed Test Database"** button at the bottom of the login page to achieve the same result!)*
+*(Note: On the hosted version, you can simply click the **"Seed Test Database"** button on the login page!)*
 
-### 5. Start the Application
-Finally, start up the Next.js development server:
+## 🚀 Running the App
+
+### Development Mode
 ```bash
 npm run dev
 ```
+Open [http://localhost:3000/jlabs/login](http://localhost:3000/jlabs/login)
 
-Open [http://localhost:3000/jlabs/login](http://localhost:3000/jlabs/login) with your browser to see the app.
+### Production Build
+```bash
+npm run build
+npm run start
+```
 
-### 6. Open Prisma Studio (Database GUI)
-To view and manage your database tables visually, you can launch Prisma Studio natively using:
+## 🛠️ Management Tools
+
+### Database GUI (Prisma Studio)
+Launch the visual database manager:
 ```bash
 npm run studio
 ```
-This script handles the environment variables properly to open Prisma's built-in GUI on your browser (usually at `http://localhost:5555`).
+Access at `http://localhost:5555`
+
+## 📂 Project Structure
+- `/app` - Next.js App Router (Pages & API Routes)
+- `/components` - Reusable UI components (Map, etc.)
+- `/lib` - Core logic, database clients, and utilities
+- `/prisma` - Database schema and seed scripts
+- `/public` - Static assets and branding logos
