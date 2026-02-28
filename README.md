@@ -41,7 +41,7 @@ Finally, start up the Next.js development server:
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the app.
+Open [http://localhost:3000/jlabs/login](http://localhost:3000/jlabs/login) with your browser to see the app.
 
 ### 6. Open Prisma Studio (Database GUI)
 To view and manage your database tables visually, you can launch Prisma Studio natively using:
