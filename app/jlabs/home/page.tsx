@@ -64,19 +64,42 @@ export default function Home() {
     }, []);
 
     const fetchIpData = useCallback(async (ip: string = '', isInitial: boolean = false) => {
+        setIsLoading(true);
         setError(null);
-        if (!isInitial) setIsSearching(true);
+        if (!ip) setIsSearching(true);
 
         try {
-            // Validate IP if not empty
-            if (ip && !/^(\d{1,3}\.){3}\d{1,3}$/.test(ip) && !/^[0-9a-fA-F:]+$/.test(ip)) {
-                throw new Error('Invalid IP address format');
+            let targetIp = ip;
+
+            // If no IP provided (Initial load or Reset), pre-detect via client-side for VPN reliability
+            if (!targetIp) {
+                try {
+                    const ipifyRes = await fetch('https://api.ipify.org?format=json', { cache: 'no-store' });
+                    if (ipifyRes.ok) {
+                        const { ip: detectedIp } = await ipifyRes.json();
+                        targetIp = detectedIp;
+                    }
+                } catch (e) {
+                    console.warn('Client-side IP detection failed, falling back to server detection');
+                }
             }
 
-            const res = await fetch(`https://ipinfo.io/${ip ? ip + '/' : ''}geo`);
+            // Validate IP if not empty
+            if (targetIp && !/^(\d{1,3}\.){3}\d{1,3}$/.test(targetIp) && !/^[0-9a-fA-F:]+$/.test(targetIp)) {
+                throw new Error('Invalid IP address format');
+            }
+            // Trigger a clean re-mount of the map if the IP changed
+            if (targetIp !== userIp) {
+                setIpData(null);
+                // Give React a moment to unmount the old map
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+
+            const res = await fetch(`/api/geolocation${targetIp ? `?ip=${targetIp}` : ''}`, { cache: 'no-store' });
             if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
                 setNetworkStatus('Degraded');
-                throw new Error('Failed to fetch geolocation data');
+                throw new Error(errorData.message || 'Failed to fetch geolocation data');
             }
 
             const data: GeolocationData = await res.json();
@@ -91,27 +114,26 @@ export default function Home() {
             setNetworkStatus('Operational');
             if (isInitial) setUserIp(data.ip);
 
-            // Save to history if it's a manual search and successful
-            if (!isInitial) {
-                const [lat, lng] = data.loc.split(',').map(Number);
-                await fetch('/api/history', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        ipAddress: data.ip,
-                        city: data.city || 'Unknown',
-                        region: data.region || 'Unknown',
-                        country: data.country || '??',
-                        isp: data.org || 'Unknown Provider',
-                        asn: data.org?.match(/AS\d+/)?.[0] || data.org?.split(' ')[0] || 'N/A',
-                        timezone: data.timezone || 'UTC',
-                        latitude: lat,
-                        longitude: lng,
-                        geoInfo: data
-                    })
-                });
-                loadHistory();
-            }
+            // Save to history automatically
+            const [lat, lng] = data.loc.split(',').map(Number);
+            await fetch('/api/history', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ipAddress: data.ip,
+                    city: data.city || 'Unknown',
+                    region: data.region || 'Unknown',
+                    country: data.country || '??',
+                    isp: data.org || 'Unknown Provider',
+                    asn: data.org?.match(/AS\d+/)?.[0] || data.org?.split(' ')[0] || 'N/A',
+                    timezone: data.timezone || 'UTC',
+                    latitude: lat,
+                    longitude: lng,
+                    postal: data.postal,
+                    geoInfo: data
+                })
+            });
+            loadHistory();
         } catch (err: any) {
             setError(err.message);
             setNetworkStatus('Interrupted');
@@ -128,9 +150,21 @@ export default function Home() {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        if (searchInput.trim()) {
-            fetchIpData(searchInput.trim());
+        const ip = searchInput.trim();
+
+        if (!ip) return;
+
+        // IPv4 Regex: 4 octets, each 0-255
+        const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+
+        if (!ipv4Regex.test(ip)) {
+            setError('Invalid IPv4 Address format (e.g. 192.168.1.1, max 255 per part)');
+            setNetworkStatus('Interrupted');
+            return;
         }
+
+        setError(null);
+        fetchIpData(ip);
     };
 
     const handleLogout = async () => {
@@ -144,7 +178,7 @@ export default function Home() {
 
     const handleClearSearch = () => {
         setSearchInput('');
-        if (userIp) fetchIpData(userIp, true); // Pass true for isInitial to skip history saving
+        fetchIpData('', true); // Re-detect current connection IP
     };
 
     const handleHistoryClick = (item: HistoryItem) => {
@@ -155,10 +189,14 @@ export default function Home() {
             country: item.country || '',
             loc: `${item.latitude},${item.longitude}`,
             org: item.isp || '',
-            postal: '',
+            postal: item.geoInfo?.postal || '',
             timezone: item.timezone || ''
         });
         setSearchInput(item.ipAddress);
+
+        // Auto-close sidebar on mobile
+        const sidebarToggle = document.getElementById('sidebar-toggle') as HTMLInputElement;
+        if (sidebarToggle) sidebarToggle.checked = false;
     };
 
     const toggleHistorySelection = (id: number) => {
@@ -340,10 +378,7 @@ export default function Home() {
         
         /* Ensure Leaflet controls are ALWAYS on top and reachable */
         .leaflet-control-container {
-            z-index: 50 !important;
-            position: absolute !important;
-            inset: 0;
-            pointer-events: none;
+            z-index: 1000 !important;
         }
         .leaflet-control {
             pointer-events: auto !important;
@@ -471,19 +506,28 @@ export default function Home() {
                                 <span className="material-symbols-outlined">search</span>
                             </div>
                             <input
-                                className={`w-full bg-[#111827] border rounded-2xl py-5 pl-14 pr-52 text-base font-medium text-white focus:ring-2 focus:ring-blue-500/40 outline-none transition-all placeholder:text-slate-600 ${error ? 'border-red-500/50 focus:ring-red-500/20' : 'border-white/5'}`}
-                                placeholder="Search IPv4/IPv6 Address..."
+                                className={`w-full bg-[#111827] border rounded-2xl py-5 pl-14 pr-20 text-base font-medium text-white focus:ring-2 focus:ring-blue-500/40 outline-none transition-all placeholder:text-slate-600 ${error ? 'border-red-500/50 focus:ring-red-500/20' : 'border-white/5'}`}
+                                placeholder="Search IPv4 Address (e.g. 8.8.8.8)..."
                                 type="text"
                                 value={searchInput}
-                                onChange={(e) => setSearchInput(e.target.value)}
+                                onChange={(e) => {
+                                    // Restrict to numbers and dots only
+                                    const val = e.target.value.replace(/[^0-9.]/g, '');
+                                    setSearchInput(val);
+                                }}
                             />
                             <div className="absolute inset-y-0 right-4 flex items-center gap-3">
                                 <button
                                     type="submit"
                                     disabled={isSearching}
-                                    className="bg-blue-600 hover:bg-blue-500 text-white px-5 h-10 rounded-xl font-bold text-xs transition-all uppercase tracking-widest flex items-center gap-2 disabled:opacity-50"
+                                    className="bg-blue-600 hover:bg-blue-500 text-white w-12 h-10 rounded-xl font-bold transition-all flex items-center justify-center disabled:opacity-50"
+                                    title="Locate Target"
                                 >
-                                    {isSearching ? 'Locating...' : <>Locate <span className="material-symbols-outlined text-lg">explore</span></>}
+                                    {isSearching ? (
+                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                    ) : (
+                                        <span className="material-symbols-outlined text-xl">explore</span>
+                                    )}
                                 </button>
                             </div>
                         </form>
@@ -496,13 +540,15 @@ export default function Home() {
                                 <span className="inline-block">Reset IP</span>
                             </button>
                             <div className="w-px h-6 md:h-8 bg-white/5 mx-1 md:mx-2 hidden md:block"></div>
-                            <button className="shrink-0 w-12 h-12 md:w-14 md:h-14 bg-[#111827] border border-white/5 rounded-xl md:rounded-2xl text-slate-400 hover:text-white transition-all flex items-center justify-center relative">
-                                <span className="material-symbols-outlined text-lg md:text-xl">dns</span>
-                                <span className="absolute top-3 md:top-4 right-3 md:right-4 w-2 h-2 bg-emerald-500 rounded-full border-2 border-[#111827] shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
-                            </button>
-                            <div className="flex flex-col ml-1 md:ml-2">
-                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Network Status</span>
-                                <span className={`text-[11px] font-bold uppercase ${networkStatus === 'Operational' ? 'text-emerald-500' : 'text-amber-500'}`}>{networkStatus}</span>
+                            <div className="flex items-center gap-3 px-4 h-12 md:h-14 bg-[#111827] border border-white/5 rounded-xl md:rounded-2xl shrink-0">
+                                <div className="relative flex items-center justify-center">
+                                    <span className="material-symbols-outlined text-slate-400 text-lg md:text-xl">dns</span>
+                                    <span className={`absolute -top-1 -right-1 w-2 h-2 rounded-full border-2 border-[#111827] shadow-[0_0_8px_rgba(16,185,129,0.5)] ${networkStatus === 'Operational' ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Network Status</span>
+                                    <span className={`text-[11px] font-bold uppercase ${networkStatus === 'Operational' ? 'text-emerald-500' : 'text-amber-500'}`}>{networkStatus}</span>
+                                </div>
                             </div>
                         </div>
                     </header>
@@ -582,13 +628,13 @@ export default function Home() {
                                             <div className="flex items-center justify-between mb-1.5">
                                                 <span className="text-[9px] font-bold text-slate-600 uppercase">Latitude</span>
                                             </div>
-                                            <p className="text-sm font-mono font-bold text-slate-300 tracking-tight">{lat}</p>
+                                            <p className="text-sm font-mono font-bold text-slate-300 tracking-tight">{lat.toFixed(4)}</p>
                                         </div>
                                         <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 group hover:border-blue-500/30 transition-all">
                                             <div className="flex items-center justify-between mb-1.5">
                                                 <span className="text-[9px] font-bold text-slate-600 uppercase">Longitude</span>
                                             </div>
-                                            <p className="text-sm font-mono font-bold text-slate-300 tracking-tight">{lng}</p>
+                                            <p className="text-sm font-mono font-bold text-slate-300 tracking-tight">{lng.toFixed(4)}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -600,7 +646,7 @@ export default function Home() {
                         </div>
 
                         <div className="order-1 xl:order-2 col-span-12 xl:col-span-8 bento-container relative overflow-hidden flex flex-col min-h-[400px] xl:min-h-[500px]">
-                            {ipData && (
+                            {ipData && lat !== 0 && lng !== 0 && !isNaN(lat) && !isNaN(lng) && (
                                 <div className="flex-1 w-full h-full relative">
                                     <Map lat={lat} lng={lng} ip={ipData.ip} />
                                     <div className="absolute inset-0 map-overlay-gradient pointer-events-none z-20"></div>
