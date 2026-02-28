@@ -3,18 +3,11 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { SignJWT } from 'jose';
 import pg from 'pg';
-import fs from 'fs';
-import path from 'path';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
 
-// Log to a file we can definitely read
 function debugLog(data: any) {
-    const logPath = path.join(process.cwd(), 'server_debug.log');
-    const timestamp = new Date().toISOString();
-    const logMessage = `[${timestamp}] ${JSON.stringify(data, null, 2)}\n---\n`;
-    fs.appendFileSync(logPath, logMessage);
-    console.log('--- DEBUG_LOG [Login API] ---', data);
+    console.log('[DEBUG_LOG]', JSON.stringify(data, null, 2));
 }
 
 export async function POST(req: NextRequest) {

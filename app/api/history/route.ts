@@ -2,19 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { jwtVerify } from 'jose';
 import pg from 'pg';
-import fs from 'fs';
-import path from 'path';
 
-const LOG_FILE = path.join(process.cwd(), 'server_debug.log');
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
 
 function logToFile(msg: string) {
-    const timestamp = new Date().toISOString();
-    try {
-        fs.appendFileSync(LOG_FILE, `[${timestamp}] [HISTORY_API] ${msg}\n`);
-    } catch (e) {
-        console.error('Logging failed:', e);
-    }
+    console.log('[HISTORY_API]', msg);
 }
 
 // Helper to get user from cookie
