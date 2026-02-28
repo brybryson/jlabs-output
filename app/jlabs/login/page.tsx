@@ -9,6 +9,16 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+
+  // Seeder Modal State
+  const [isSeeding, setIsSeeding] = useState(false);
+  const [showSeedModal, setShowSeedModal] = useState(false);
+  const [seedResult, setSeedResult] = useState<{
+    message: string;
+    status: string;
+    credentials: { email: string; password: string };
+  } | null>(null);
+
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -37,6 +47,24 @@ export default function Login() {
       setError('An error occurred. Please try again later.');
     } finally {
       setIsAuthenticating(false);
+    }
+  };
+
+  const runSeeder = async () => {
+    setIsSeeding(true);
+    try {
+      const res = await fetch('/api/seed');
+      const data = await res.json();
+      if (res.ok) {
+        setSeedResult(data);
+        setShowSeedModal(true);
+      } else {
+        setError(data.message || 'Seeding failed');
+      }
+    } catch (e) {
+      setError('Seeding failed. Please try again.');
+    } finally {
+      setIsSeeding(false);
     }
   };
 
@@ -73,8 +101,6 @@ export default function Login() {
               <p className="text-slate-400 text-sm md:text-base font-medium">Authenticate to access the hub.</p>
             </div>
 
-
-
             <form className="space-y-6 relative z-10" onSubmit={handleLogin}>
               <div className="space-y-3">
                 <div className="flex justify-between items-center ml-1">
@@ -105,7 +131,6 @@ export default function Login() {
                     <span className="material-symbols-outlined text-2xl">{showPassword ? "visibility_off" : "visibility"}</span>
                   </button>
                 </div>
-
               </div>
 
               {error && (
@@ -132,9 +157,76 @@ export default function Login() {
               </button>
             </form>
 
+            <div className="mt-8 pt-8 border-t border-white/5 text-center relative z-10">
+              <p className="text-slate-500 text-xs mb-4 uppercase tracking-[0.2em] font-bold">Examiner Tools</p>
+              <button
+                type="button"
+                disabled={isSeeding}
+                onClick={runSeeder}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all text-xs font-bold uppercase tracking-widest disabled:opacity-50"
+              >
+                <span className={`material-symbols-outlined text-base ${isSeeding ? 'animate-spin' : ''}`}>
+                  {isSeeding ? 'sync' : 'database'}
+                </span>
+                {isSeeding ? 'Seeding...' : 'Seed Test Database'}
+              </button>
+              <p className="mt-4 text-[10px] text-slate-600 font-medium">Click to generate `test@example.com` / `password123`</p>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Seeder Modal */}
+      {showSeedModal && seedResult && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setShowSeedModal(false)}></div>
+          <div className="bg-[#0f172a] border border-white/10 rounded-[2rem] p-8 md:p-10 w-full max-w-md relative z-10 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex flex-col items-center text-center">
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-6 ${seedResult.status === 'created' ? 'bg-green-500/20 text-green-400' : 'bg-blue-500/20 text-blue-400'}`}>
+                <span className="material-symbols-outlined text-3xl">
+                  {seedResult.status === 'created' ? 'check_circle' : 'info'}
+                </span>
+              </div>
+
+              <h3 className="text-xl font-bold text-white mb-2">{seedResult.message}</h3>
+              <p className="text-slate-400 text-sm mb-8">
+                {seedResult.status === 'created'
+                  ? 'The test account has been successfully created in the database.'
+                  : 'The test account already exists. Credentials have been verified/updated.'}
+              </p>
+
+              <div className="w-full bg-black/40 rounded-2xl p-6 border border-white/5 space-y-4 mb-8">
+                <div className="flex flex-col items-start gap-1">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Email</span>
+                  <span className="text-white font-mono break-all">{seedResult.credentials.email}</span>
+                </div>
+                <div className="flex flex-col items-start gap-1">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Password</span>
+                  <span className="text-white font-mono">{seedResult.credentials.password}</span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  setEmail(seedResult.credentials.email);
+                  setPassword(seedResult.credentials.password);
+                  setShowSeedModal(false);
+                }}
+                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all"
+              >
+                Use These Credentials
+              </button>
+
+              <button
+                onClick={() => setShowSeedModal(false)}
+                className="mt-4 text-slate-500 hover:text-slate-300 text-sm font-medium transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

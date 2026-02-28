@@ -33,7 +33,8 @@ npx prisma db seed
 This will create a user with:
 - **Email**: `test@example.com`
 - **Password**: `password123`
-(You can use this account to test the login functionality!)
+
+*(Note: On the hosted Vercel version, you can simply click the **"Seed Test Database"** button at the bottom of the login page to achieve the same result!)*
 
 ### 5. Start the Application
 Finally, start up the Next.js development server:
