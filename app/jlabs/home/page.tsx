@@ -88,6 +88,7 @@ export default function Home() {
             if (targetIp && !/^(\d{1,3}\.){3}\d{1,3}$/.test(targetIp) && !/^[0-9a-fA-F:]+$/.test(targetIp)) {
                 throw new Error('Invalid IP address format');
             }
+
             // Just clear the input, don't unmount the map to prevent shaking
             if (targetIp !== userIp) {
                 // No need to setIpData(null) or wait, Map will handle flyTo
@@ -139,7 +140,7 @@ export default function Home() {
             setIsLoading(false);
             setIsSearching(false);
         }
-    }, [loadHistory]);
+    }, [loadHistory, userIp]);
 
     useEffect(() => {
         fetchIpData('', true);
@@ -578,6 +579,17 @@ export default function Home() {
                                     const val = e.target.value.replace(/[^0-9.]/g, '');
                                     setSearchInput(val);
                                 }}
+                                onPaste={(e) => {
+                                    // Support pasting with auto-cleanup (strip leading/trailing whitespace)
+                                    const pastedData = e.clipboardData.getData('text');
+                                    // We can be a bit smarter here: if there's an IP followed by junk, just take the IP
+                                    const ipMatch = pastedData.match(/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/);
+                                    if (ipMatch) {
+                                        e.preventDefault();
+                                        setSearchInput(ipMatch[0]);
+                                    }
+                                    // Otherwise let onChange handle the raw numeric/dot stripping
+                                }}
                             />
                             <div className="absolute inset-y-0 right-4 flex items-center gap-3">
                                 <button
@@ -661,89 +673,90 @@ export default function Home() {
                                         <div className="flex items-start gap-4 pb-5 border-b border-white/5">
                                             <span className="material-symbols-outlined text-slate-500 text-xl mt-1">location_on</span>
                                             <div className="flex-1">
-                                                <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-0.5">Location</p>
-                                                <p className="text-sm font-semibold text-slate-200 break-words leading-tight">{ipData.city && ipData.region ? `${ipData.city}, ${ipData.region}` : (ipData.city || ipData.region || 'Unknown Location')}</p>
-                                                <p className="text-[11px] text-slate-500">{ipData.country} · Geographic Center</p>
+                                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Location</p>
+                                                <p className="text-white font-bold">{ipData.city || 'Unknown'}, {ipData.region || 'Unknown'}</p>
+                                                <p className="text-[11px] text-slate-400 mt-1">{ipData.country || '??'} · Geographic Center</p>
                                             </div>
                                         </div>
                                         <div className="flex items-start gap-4 pb-5 border-b border-white/5">
                                             <span className="material-symbols-outlined text-slate-500 text-xl mt-1">dns</span>
                                             <div className="flex-1">
-                                                <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-0.5">Provider Network</p>
-                                                <p className="text-sm font-semibold text-slate-200 break-words leading-tight pr-2">{ipData.org || 'Private Network'}</p>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">NODE_ID: {ipData.postal || 'N/A'}</span>
-                                                    <span className="text-[10px] bg-blue-500/10 text-blue-400 px-1.5 py-0.5 rounded">Operational</span>
+                                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Provider Network</p>
+                                                <p className="text-white font-bold leading-tight">{ipData.org || 'Unknown Provider'}</p>
+                                                <div className="flex items-center gap-2 mt-2">
+                                                    <span className="px-1.5 py-0.5 bg-slate-800 text-slate-400 text-[9px] font-bold rounded">NODE_ID: {ipData.org?.match(/\d+/)?.[0] || '1400'}</span>
+                                                    <span className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 text-[9px] font-bold rounded uppercase">Operational</span>
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="flex items-start gap-4">
                                             <span className="material-symbols-outlined text-slate-500 text-xl mt-1">schedule</span>
                                             <div className="flex-1">
-                                                <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-0.5">Local Timezone</p>
-                                                <p className="text-sm font-semibold text-slate-200">{ipData.timezone}</p>
-                                                <p className="text-[11px] text-slate-500">UTC System Standard</p>
+                                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Local Timezone</p>
+                                                <p className="text-white font-bold">{ipData.timezone || 'UTC'}</p>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-3 pt-4">
-                                        <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 group hover:border-blue-500/30 transition-all">
-                                            <div className="flex items-center justify-between mb-1.5">
-                                                <span className="text-[9px] font-bold text-slate-600 uppercase">Latitude</span>
-                                            </div>
-                                            <p className="text-sm font-mono font-bold text-slate-300 tracking-tight">{lat.toFixed(4)}</p>
+
+                                    <div className="mt-8 pt-6 border-t border-white/5 grid grid-cols-2 gap-4">
+                                        <div className="p-4 bg-slate-900/40 rounded-xl border border-white/5">
+                                            <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1">Latitude</p>
+                                            <p className="text-white font-mono text-sm">{lat.toFixed(4)}</p>
                                         </div>
-                                        <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 group hover:border-blue-500/30 transition-all">
-                                            <div className="flex items-center justify-between mb-1.5">
-                                                <span className="text-[9px] font-bold text-slate-600 uppercase">Longitude</span>
-                                            </div>
-                                            <p className="text-sm font-mono font-bold text-slate-300 tracking-tight">{lng.toFixed(4)}</p>
+                                        <div className="p-4 bg-slate-900/40 rounded-xl border border-white/5">
+                                            <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1">Longitude</p>
+                                            <p className="text-white font-mono text-sm">{lng.toFixed(4)}</p>
                                         </div>
                                     </div>
                                 </div>
                             ) : (
                                 <div className="p-12 text-center">
-                                    <p className="text-sm text-slate-600">No data available for this target.</p>
+                                    <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Awaiting Analysis...</p>
                                 </div>
                             )}
                         </div>
 
-                        <div className="order-1 xl:order-2 col-span-12 xl:col-span-8 bento-container relative overflow-hidden flex flex-col min-h-[400px] xl:min-h-[500px]">
-                            {ipData && lat !== 0 && lng !== 0 && !isNaN(lat) && !isNaN(lng) && (
-                                <div className="flex-1 w-full h-full relative">
-                                    <Map lat={lat} lng={lng} ip={ipData.ip} />
-                                    <div className="absolute inset-0 map-overlay-gradient pointer-events-none z-20"></div>
-                                    <div className="absolute top-6 left-6 z-30 flex flex-col gap-2">
-                                        <div className="bg-slate-900/80 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 flex items-center gap-3">
-                                            <div className={`w-2 h-2 rounded-full ${networkStatus === 'Operational' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500 animate-pulse'} shadow-[0_0_10px_rgba(16,185,129,0.4)]`}></div>
-                                            <span className="text-[10px] font-extrabold text-white tracking-widest uppercase">Live Tracking Active</span>
-                                        </div>
-                                    </div>
-                                    <div className="absolute bottom-6 left-6 right-6 z-30 pointer-events-none lg:pointer-events-auto">
-                                        <div className="hidden md:grid grid-cols-4 gap-4">
-                                            <div className="bg-slate-900/80 backdrop-blur-xl p-4 rounded-xl border border-white/10">
-                                                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-1">Status</p>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-sm font-semibold text-white">Live Node</span>
-                                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                                </div>
-                                            </div>
-                                            <div className="bg-slate-900/80 backdrop-blur-xl p-4 rounded-xl border border-white/10">
-                                                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-1">Stability</p>
-                                                <p className={`text-sm font-semibold ${parseFloat(stability) > 99.8 ? 'text-emerald-400' : 'text-blue-400'}`}>{stability}</p>
-                                            </div>
-                                            <div className="bg-slate-900/80 backdrop-blur-xl p-4 rounded-xl border border-white/10">
-                                                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-1">Security</p>
-                                                <p className="text-sm font-semibold text-blue-400">{security}</p>
-                                            </div>
-                                            <div className="bg-slate-900/80 backdrop-blur-xl p-4 rounded-xl border border-white/10">
-                                                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-1">ISP Tier</p>
-                                                <p className="text-sm font-semibold text-white">{ispTier}</p>
-                                            </div>
-                                        </div>
+                        <div className="order-1 xl:order-2 col-span-12 xl:col-span-8 flex flex-col gap-4 lg:gap-6">
+                            <div className="flex-1 bento-container overflow-hidden relative min-h-[400px] xl:min-h-0">
+                                <div className="absolute top-6 left-6 z-30 pointer-events-none">
+                                    <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 px-4 py-2.5 rounded-full flex items-center gap-3">
+                                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                                        <span className="text-[10px] font-bold text-white uppercase tracking-widest">Live Tracking Active</span>
                                     </div>
                                 </div>
-                            )}
+                                <div className="absolute bottom-6 right-6 z-30 pointer-events-none hidden md:flex flex-col items-end gap-2">
+                                    <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-lg">
+                                        <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Coverage</p>
+                                        <p className="text-[10px] font-bold text-white uppercase">Global Satellite</p>
+                                    </div>
+                                </div>
+                                <div className="w-full h-full relative">
+                                    <div className="absolute inset-0 map-overlay-gradient pointer-events-none"></div>
+                                    <Map lat={lat} lng={lng} ip={ipData?.ip || userIp || '0.0.0.0'} />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 shrink-0">
+                                <div className="bento-container p-5 lg:p-6 text-center lg:text-left">
+                                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Status</p>
+                                    <div className="flex items-center justify-center lg:justify-start gap-2">
+                                        <p className="text-sm font-black text-white">Live Node</p>
+                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                                    </div>
+                                </div>
+                                <div className="bento-container p-5 lg:p-6 text-center lg:text-left">
+                                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Stability</p>
+                                    <p className="text-sm font-black text-blue-400">{stability}</p>
+                                </div>
+                                <div className="bento-container p-5 lg:p-6 text-center lg:text-left">
+                                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Security</p>
+                                    <p className="text-sm font-black text-blue-400">{security}</p>
+                                </div>
+                                <div className="bento-container p-5 lg:p-6 text-center lg:text-left">
+                                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">ISP Tier</p>
+                                    <p className="text-sm font-black text-white truncate">{ispTier}</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </main>
