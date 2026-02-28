@@ -23,6 +23,14 @@ model User {
 model SearchHistory {
   id        Int      @id @default(autoincrement())
   ipAddress String
+  city      String?  
+  region    String?  
+  country   String?  
+  isp       String?  
+  asn       String?  
+  timezone  String?  
+  latitude  Float?   
+  longitude Float?   
   geoInfo   Json
   createdAt DateTime @default(now())
   

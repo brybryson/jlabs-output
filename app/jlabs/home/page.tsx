@@ -10,6 +10,13 @@ export default function Home() {
                 @apply bg-[#080B11] text-slate-300 font-['Inter',_sans-serif] overflow-hidden;
             }
         }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
         :root {
             --sidebar-width: 280px;
             --sidebar-collapsed-width: 80px;
@@ -64,6 +71,11 @@ export default function Home() {
             #sidebar-toggle:checked ~ aside .nav-footer {
                 opacity: 0;
                 pointer-events: none;
+                display: none;
+            }
+            #sidebar-toggle:checked ~ aside {
+                width: var(--sidebar-collapsed-width);
+                overflow: hidden !important;
             }
             aside {
                 transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -77,43 +89,83 @@ export default function Home() {
         @media (max-width: 1023px) {
             aside {
                 max-height: 72px;
-                transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s ease;
-                background-color: #080B11;
-                overflow: hidden !important;
+                transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.5s ease, box-shadow 0.5s ease;
+                background-color: var(--glass-bg);
+                backdrop-filter: blur(20px);
+                overflow: hidden;
             }
             #sidebar-toggle:checked ~ aside {
-                max-height: 900px !important;
-                background-color: rgba(8, 11, 17, 0.85) !important;
-                backdrop-filter: blur(16px);
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-                border-bottom-left-radius: 1rem;
-                border-bottom-right-radius: 1rem;
-                box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
+                max-height: 600px !important;
+                background-color: rgba(13, 18, 28, 0.96) !important;
+                backdrop-filter: blur(30px);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+                border-bottom-left-radius: 1.5rem;
+                border-bottom-right-radius: 1.5rem;
+                box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.8);
             }
             .mobile-menu {
                 opacity: 0;
-                transform: translateY(-10px);
-                transition: opacity 0.3s ease, transform 0.3s ease;
+                visibility: hidden;
+                transform: translateY(-20px);
+                transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), visibility 0s linear 0.4s;
                 pointer-events: none;
             }
             #sidebar-toggle:checked ~ aside .mobile-menu {
-                display: flex !important;
                 opacity: 1;
+                visibility: visible;
                 transform: translateY(0);
                 pointer-events: auto;
-                transition-delay: 0.1s;
+                transition: opacity 0.4s ease 0.1s, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s, visibility 0s;
             }
         }
 
         .map-overlay-gradient {
             background: radial-gradient(circle at center, transparent 0%, #080B11 120%);
         }
+        
+        /* Custom Checkbox Styles */
+        .custom-checkbox {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 1.5px solid rgba(255, 255, 255, 0.15);
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.03);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+        }
+        .custom-checkbox:checked {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+        }
+        .custom-checkbox:checked::after {
+            content: 'check';
+            font-family: 'Material Symbols Outlined';
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .custom-checkbox:hover {
+            border-color: rgba(59, 130, 246, 0.6);
+            background: rgba(59, 130, 246, 0.05);
+        }
+        .custom-checkbox:focus-visible {
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+        }
       `}} />
             <div className="flex flex-col lg:flex-row h-screen w-full relative">
                 <input className="hidden" id="sidebar-toggle" type="checkbox" />
-                <aside className="sidebar-transition w-full lg:w-[var(--sidebar-width)] h-[72px] lg:h-full glass-sidebar flex flex-col z-40 lg:relative shrink-0 border-b lg:border-r border-white/5 overflow-hidden">
-                    <div className="p-4 lg:p-6 flex items-center justify-between lg:justify-start h-[72px] lg:h-20 shrink-0 border-white/5 w-full bg-[#080B11]/95 lg:bg-transparent relative z-20">
-                        <label className="w-10 h-10 bg-blue-500/10 text-blue-500 rounded-lg flex items-center justify-center cursor-pointer hover:bg-blue-500/20 transition-all shrink-0" htmlFor="sidebar-toggle">
+                <aside className="sidebar-transition w-full lg:w-[var(--sidebar-width)] h-auto lg:h-full glass-sidebar flex flex-col z-40 lg:relative shrink-0 border-b lg:border-r border-white/5 overflow-hidden">
+                    <div className="p-4 lg:p-6 flex items-center justify-between lg:justify-start h-[72px] lg:h-20 shrink-0 border-white/5 w-full bg-transparent relative z-20">
+                        <label className="w-10 h-10 bg-blue-500/10 text-blue-500 rounded-lg flex items-center justify-center cursor-pointer hover:bg-blue-500/20 transition-all shrink-0 select-none touch-manipulation webkit-tap-highlight-transparent" htmlFor="sidebar-toggle" style={{ WebkitTapHighlightColor: 'transparent' }}>
                             <span className="material-symbols-outlined text-2xl">menu</span>
                         </label>
                         <div className="expanded-content ml-4 flex items-center gap-3">
@@ -122,7 +174,7 @@ export default function Home() {
                         </div>
                     </div>
 
-                    <div className="mobile-menu hidden lg:flex flex-1 py-6 lg:overflow-y-auto custom-scrollbar flex-col w-full bg-[#080B11] lg:bg-transparent h-[calc(100vh-72px)] lg:h-auto overflow-hidden">
+                    <div className="mobile-menu flex flex-1 py-6 overflow-y-auto custom-scrollbar flex-col w-full bg-transparent h-[calc(100vh-72px)] lg:h-auto">
                         <div className="px-6 mb-4 expanded-content">
                             <div className="flex items-center justify-between">
                                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Recent Activity</span>
@@ -137,7 +189,7 @@ export default function Home() {
                                     <p className="text-xs font-semibold text-slate-300 truncate">142.250.190.46</p>
                                     <p className="text-[10px] text-slate-500">Mountain View, US</p>
                                 </div>
-                                <input className="expanded-content rounded border-slate-700 bg-transparent text-blue-500 focus:ring-0 focus:ring-offset-0" type="checkbox" />
+                                <input className="expanded-content custom-checkbox" type="checkbox" />
                             </div>
                             <div className="group flex items-center gap-3 p-3 rounded-xl bg-blue-500/5 border border-blue-500/20 cursor-pointer">
                                 <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg bg-blue-500 text-white">
@@ -147,7 +199,7 @@ export default function Home() {
                                     <p className="text-xs font-bold text-white truncate">8.8.8.8</p>
                                     <p className="text-[10px] text-blue-400 font-medium">Currently Tracking</p>
                                 </div>
-                                <input defaultChecked className="expanded-content rounded border-blue-500/50 bg-transparent text-blue-500 focus:ring-0 focus:ring-offset-0" type="checkbox" />
+                                <input defaultChecked className="expanded-content custom-checkbox" type="checkbox" />
                             </div>
                             <div className="group flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-all cursor-pointer">
                                 <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg bg-slate-800/40 text-slate-400">
@@ -157,10 +209,10 @@ export default function Home() {
                                     <p className="text-xs font-semibold text-slate-300 truncate">104.16.248.249</p>
                                     <p className="text-[10px] text-slate-500">Cloudflare Node</p>
                                 </div>
-                                <input className="expanded-content rounded border-slate-700 bg-transparent text-blue-500 focus:ring-0 focus:ring-offset-0" type="checkbox" />
+                                <input className="expanded-content custom-checkbox" type="checkbox" />
                             </div>
                         </nav>
-                        <div className="p-4 mt-auto border-t border-white/5 w-full">
+                        <div className="p-4 mt-auto border-t border-white/5 w-full nav-footer">
                             <button className="sidebar-footer-btn w-full h-11 flex items-center gap-3 bg-slate-800/30 hover:bg-red-500/10 hover:text-red-400 text-slate-400 rounded-lg transition-all font-bold text-[11px] uppercase tracking-wider">
                                 <span className="material-symbols-outlined text-lg">delete_forever</span>
                                 <span className="expanded-content">Clear Records</span>
@@ -168,7 +220,7 @@ export default function Home() {
                         </div>
                     </div>
                 </aside>
-                <main className="flex-1 flex flex-col p-4 md:p-8 lg:p-12 overflow-y-auto w-full h-[calc(100vh-72px)] lg:h-full">
+                <main className="flex-1 flex flex-col p-4 md:p-8 lg:p-12 overflow-y-auto w-full h-[calc(100vh-72px)] lg:h-full hide-scrollbar">
                     <header className="mb-6 lg:mb-10 flex flex-col md:flex-row items-stretch md:items-center gap-4 lg:gap-6">
                         <div className="relative flex-1 w-full md:max-w-3xl">
                             <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-500">
