@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "studio": "DATABASE_URL=postgres://macbookpro@localhost:5432/jlabs_exam?sslmode=disable npx prisma studio",
-    "seed": "npx prisma db seed"
+    "seed": "npx prisma db seed",
+    "postinstall": "prisma generate"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
