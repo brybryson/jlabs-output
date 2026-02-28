@@ -73,16 +73,29 @@ export async function POST(req: NextRequest) {
     const user = await getAuthUser(req);
     if (!user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
-    let body;
-    try {
-        body = await req.json();
-    } catch (e) {
-        return NextResponse.json({ message: 'Invalid JSON' }, { status: 400 });
-    }
-
-    const { ipAddress, city, region, country, isp, asn, timezone, latitude, longitude, geoInfo } = body;
+    const body = await req.json();
+    const { ipAddress, city, region, country, isp, asn, timezone, latitude, longitude, postal, geoInfo } = body;
 
     try {
+        // --- REFINED DE-DUPLICATION (PRISMA) ---
+        // Find if this IP already exists for this user
+        const existingEntry = await prisma.searchHistory.findFirst({
+            where: {
+                userId: user.userId,
+                ipAddress: ipAddress
+            }
+        });
+
+        if (existingEntry) {
+            // Update timestamp to move to top, but don't create duplicate
+            const updatedEntry = await prisma.searchHistory.update({
+                where: { id: existingEntry.id },
+                data: { createdAt: new Date() }
+            });
+            logToFile(`POST_UPDATE: Reusing IP ${ipAddress} for user ${user.userId}`);
+            return NextResponse.json(updatedEntry);
+        }
+
         const newEntry = await prisma.searchHistory.create({
             data: {
                 ipAddress,
@@ -94,7 +107,7 @@ export async function POST(req: NextRequest) {
                 timezone,
                 latitude,
                 longitude,
-                geoInfo,
+                geoInfo: { ...geoInfo, postal }, // Store postal in the geoInfo JSON blob
                 userId: user.userId,
             },
         });
@@ -110,12 +123,28 @@ export async function POST(req: NextRequest) {
         });
         try {
             logToFile(`POST_FALLBACK_QUERY_START`);
+
+            // --- REFINED DE-DUPLICATION (PG) ---
+            const existingRes = await pool.query(
+                'SELECT id FROM "SearchHistory" WHERE "userId" = $1 AND "ipAddress" = $2 LIMIT 1',
+                [user.userId, ipAddress]
+            );
+
+            if (existingRes.rowCount && existingRes.rowCount > 0) {
+                const updatedRes = await pool.query(
+                    'UPDATE "SearchHistory" SET "createdAt" = NOW() WHERE id = $1 RETURNING *',
+                    [existingRes.rows[0].id]
+                );
+                logToFile(`POST_FALLBACK_UPDATE: Reusing IP ${ipAddress}`);
+                return NextResponse.json(updatedRes.rows[0]);
+            }
+
             const result = await pool.query(
                 `INSERT INTO "SearchHistory" 
                 ("ipAddress", city, region, country, isp, asn, timezone, latitude, longitude, "geoInfo", "userId", "createdAt") 
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW()) 
                 RETURNING *`,
-                [ipAddress, city, region, country, isp, asn, timezone, latitude, longitude, JSON.stringify(geoInfo), user.userId]
+                [ipAddress, city, region, country, isp, asn, timezone, latitude, longitude, JSON.stringify({ ...geoInfo, postal }), user.userId]
             );
             logToFile(`POST_FALLBACK_QUERY_SUCCESS`);
             return NextResponse.json(result.rows[0]);
