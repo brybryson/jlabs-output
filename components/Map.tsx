@@ -26,8 +26,8 @@ function ChangeView({ center }: { center: [number, number] }) {
     useEffect(() => {
         if (center[0] !== 0 && center[1] !== 0) {
             map.flyTo(center, map.getZoom(), {
-                duration: 0.8,
-                easeLinearity: 0.5
+                duration: 1.5, // Smoother fly duration
+                easeLinearity: 0.25
             });
         }
     }, [center, map]);
@@ -38,7 +38,6 @@ function ChangeView({ center }: { center: [number, number] }) {
 function ManualZoomControl() {
     const map = useMap();
     useEffect(() => {
-        // Defensive check: only add if the map is ready and has its container initialized
         if (!map || !map.getContainer()) return;
 
         const control = L.control.zoom({ position: 'topright' });
@@ -60,20 +59,6 @@ function ManualZoomControl() {
     return null;
 }
 
-// Safe Wrapper to ensure children only render when the map is fully ready
-function SafeMapContent({ children }: { children: React.ReactNode }) {
-    const map = useMap();
-    const [ready, setReady] = useState(false); // Just use standard useState
-
-    useEffect(() => {
-        if (map && map.getContainer()) {
-            setReady(true);
-        }
-    }, [map]);
-
-    return ready ? <>{children}</> : null;
-}
-
 export default function Map({ lat, lng, ip }: MapProps) {
     const position: [number, number] = [lat, lng];
     const [isMounted, setIsMounted] = useState(false);
@@ -90,7 +75,6 @@ export default function Map({ lat, lng, ip }: MapProps) {
 
     return (
         <MapContainer
-            key={ip}
             center={position}
             zoom={15}
             scrollWheelZoom={true}
@@ -109,7 +93,6 @@ function SafeMapChildren({ lat, lng, ip }: MapProps) {
 
     useEffect(() => {
         if (map) {
-            // Give the browser one tick to ensure the DOM container is attached
             const timer = setTimeout(() => setReady(true), 10);
             return () => clearTimeout(timer);
         }

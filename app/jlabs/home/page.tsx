@@ -88,11 +88,9 @@ export default function Home() {
             if (targetIp && !/^(\d{1,3}\.){3}\d{1,3}$/.test(targetIp) && !/^[0-9a-fA-F:]+$/.test(targetIp)) {
                 throw new Error('Invalid IP address format');
             }
-            // Trigger a clean re-mount of the map if the IP changed
+            // Just clear the input, don't unmount the map to prevent shaking
             if (targetIp !== userIp) {
-                setIpData(null);
-                // Give React a moment to unmount the old map
-                await new Promise(resolve => setTimeout(resolve, 50));
+                // No need to setIpData(null) or wait, Map will handle flyTo
             }
 
             const res = await fetch(`/api/geolocation${targetIp ? `?ip=${targetIp}` : ''}`, { cache: 'no-store' });
@@ -279,23 +277,25 @@ export default function Home() {
             --radius-main: 1rem;
         }
         .sidebar-transition {
-            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .glass-sidebar {
             background: var(--glass-bg);
             backdrop-filter: blur(20px);
             border-right: 1px solid var(--border-subtle);
+            transition: background-color 0.4s ease, backdrop-filter 0.4s ease, width 0.4s cubic-bezier(0.4, 0, 0.2, 1), max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .bento-container {
             background: var(--card-bg);
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-main);
             box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.2);
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
         }
         .bento-container:hover {
             border-color: rgba(59, 130, 246, 0.2);
             box-shadow: 0 8px 30px -4px rgba(59, 130, 246, 0.1);
+            transform: translateY(-2px);
         }
         .custom-scrollbar::-webkit-scrollbar {
             width: 4px;
@@ -313,61 +313,110 @@ export default function Home() {
             }
             #sidebar-toggle:checked ~ aside .expanded-content {
                 opacity: 0;
+                transform: translateX(-10px);
                 pointer-events: none;
                 width: 0 !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 overflow: hidden;
             }
-            #sidebar-toggle:checked ~ aside nav,
+            #sidebar-toggle:checked ~ aside nav {
+                padding-left: 0;
+                padding-right: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
             #sidebar-toggle:checked ~ aside .nav-footer {
-                opacity: 0;
-                pointer-events: none;
+                padding-left: 0;
+                padding-right: 0;
+                display: flex;
+                justify-content: center;
+            }
+            #sidebar-toggle:checked ~ aside .sidebar-item-label,
+            #sidebar-toggle:checked ~ aside .custom-checkbox {
                 display: none;
             }
-            #sidebar-toggle:checked ~ aside {
-                width: var(--sidebar-collapsed-width);
-                overflow: hidden !important;
+            #sidebar-toggle:checked ~ aside .group {
+                justify-content: center;
+                width: 56px;
+                padding-left: 0;
+                padding-right: 0;
+            }
+            #sidebar-toggle:checked ~ aside .sidebar-footer-btn {
+                justify-content: center;
+                width: 56px;
+                padding-left: 0;
+                padding-right: 0;
+            }
+            #sidebar-toggle:checked ~ aside .p-4.lg\:p-6.flex {
+                justify-content: center;
+                padding-left: 0;
+                padding-right: 0;
+            }
+            #sidebar-toggle:checked ~ aside .p-4.lg\:p-6.flex label {
+                margin: 0;
+            }
+            #sidebar-toggle:checked ~ aside .expanded-content.ml-4 {
+                display: none;
             }
             aside {
                 transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             }
             .expanded-content, nav, .nav-footer {
-                transition: opacity 0.3s ease, width 0.3s ease, margin 0.3s ease, padding 0.3s ease;
+                transition: opacity 0.3s ease, transform 0.3s ease, width 0.3s ease, margin 0.3s ease, padding 0.3s ease;
                 white-space: nowrap;
             }
         }
 
         @media (max-width: 1023px) {
             aside {
-                max-height: 72px;
-                transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.5s ease, box-shadow 0.5s ease;
-                background-color: var(--glass-bg);
-                backdrop-filter: blur(20px);
-                overflow: hidden;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100% !important;
+                height: 100% !important;
+                background-color: rgba(13, 18, 28, 0.98);
+                backdrop-filter: blur(40px);
+                transform: translateX(-100%);
+                transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                z-index: 1100;
+                border-right: 1px solid rgba(255, 255, 255, 0.1);
             }
             #sidebar-toggle:checked ~ aside {
-                max-height: 600px !important;
-                background-color: rgba(13, 18, 28, 0.96) !important;
-                backdrop-filter: blur(30px);
-                border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-                border-bottom-left-radius: 1.5rem;
-                border-bottom-right-radius: 1.5rem;
-                box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.8);
+                transform: translateX(0);
+                box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
             }
             .mobile-menu {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
                 opacity: 0;
-                visibility: hidden;
-                transform: translateY(-20px);
-                transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), visibility 0s linear 0.4s;
-                pointer-events: none;
+                transition: opacity 0.3s ease;
             }
             #sidebar-toggle:checked ~ aside .mobile-menu {
                 opacity: 1;
-                visibility: visible;
-                transform: translateY(0);
-                pointer-events: auto;
-                transition: opacity 0.4s ease 0.1s, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s, visibility 0s;
+                transition: opacity 0.4s ease 0.2s;
+            }
+            .mobile-header-only {
+                display: flex;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 80px;
+                padding: 0 1.5rem;
+                align-items: center;
+                justify-content: space-between;
+                background: rgba(8, 11, 17, 0.9);
+                backdrop-filter: blur(25px);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                z-index: 1000;
+            }
+        }
+        @media (min-width: 1024px) {
+            .mobile-header-only {
+                display: none;
             }
         }
 
@@ -376,9 +425,9 @@ export default function Home() {
             z-index: 20;
         }
         
-        /* Ensure Leaflet controls are ALWAYS on top and reachable */
+        /* Adjust Leaflet controls to be below headers but above map */
         .leaflet-control-container {
-            z-index: 1000 !important;
+            z-index: 500 !important;
         }
         .leaflet-control {
             pointer-events: auto !important;
@@ -420,10 +469,22 @@ export default function Home() {
       `}} />
             <div className="flex flex-col lg:flex-row h-screen w-full relative">
                 <input className="hidden" id="sidebar-toggle" type="checkbox" />
-                <aside className="sidebar-transition w-full lg:w-[var(--sidebar-width)] h-auto lg:h-full glass-sidebar flex flex-col z-40 lg:relative shrink-0 border-b lg:border-r border-white/5 overflow-hidden">
-                    <div className="p-4 lg:p-6 flex items-center justify-between lg:justify-start h-[72px] lg:h-20 shrink-0 border-white/5 w-full bg-transparent relative z-20">
+
+                {/* Mobile Top Header */}
+                <div className="mobile-header-only">
+                    <div className="flex items-center gap-3">
+                        <img src="/logo/ip-logo.png" alt="GeoIntel Logo" className="w-8 h-8 object-contain drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
+                        <h1 className="text-base font-bold text-white uppercase tracking-widest">GeoIntel</h1>
+                    </div>
+                    <label className="w-12 h-12 bg-blue-500/10 text-blue-500 rounded-xl flex items-center justify-center cursor-pointer hover:bg-blue-500/20 active:scale-95 transition-all" htmlFor="sidebar-toggle">
+                        <span className="material-symbols-outlined text-3xl">menu</span>
+                    </label>
+                </div>
+
+                <aside className="sidebar-transition w-full lg:w-[var(--sidebar-width)] h-full glass-sidebar flex flex-col z-[110] lg:relative shrink-0 border-r border-white/5 overflow-hidden">
+                    <div className="p-4 lg:p-6 flex items-center justify-between lg:justify-start h-20 shrink-0 w-full bg-transparent relative z-20">
                         <label className="w-10 h-10 bg-blue-500/10 text-blue-500 rounded-lg flex items-center justify-center cursor-pointer hover:bg-blue-500/20 transition-all shrink-0 select-none touch-manipulation" htmlFor="sidebar-toggle" style={{ WebkitTapHighlightColor: 'transparent' }}>
-                            <span className="material-symbols-outlined text-2xl">menu</span>
+                            <span className="material-symbols-outlined text-2xl">menu_open</span>
                         </label>
                         <div className="expanded-content ml-4 flex items-center gap-3">
                             <img src="/logo/ip-logo.png" alt="GeoIntel Logo" className="w-8 h-8 object-contain drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
@@ -499,7 +560,7 @@ export default function Home() {
                     </div>
                 </aside>
 
-                <main className="flex-1 flex flex-col p-4 md:p-8 lg:p-12 overflow-y-auto w-full h-[calc(100vh-72px)] lg:h-full hide-scrollbar">
+                <main className="flex-1 flex flex-col p-4 md:p-8 lg:p-12 overflow-y-auto w-full h-full pt-[100px] md:pt-[120px] lg:pt-12 hide-scrollbar">
                     <header className="mb-6 lg:mb-10 flex flex-col md:flex-row items-stretch md:items-center gap-4 lg:gap-6">
                         <form onSubmit={handleSearch} className="relative flex-1 w-full md:max-w-3xl">
                             <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-500">
