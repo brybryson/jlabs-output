@@ -1,6 +1,23 @@
 "use client";
 
+import { useRouter } from 'next/navigation';
+
 export default function Home() {
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        try {
+            const response = await fetch('/api/logout', {
+                method: 'POST',
+            });
+
+            if (response.ok) {
+                router.push('/jlabs/login');
+            }
+        } catch (error) {
+            console.error('Logout failed:', error);
+        }
+    };
     return (
         <>
             <style dangerouslySetInnerHTML={{
@@ -212,10 +229,17 @@ export default function Home() {
                                 <input className="expanded-content custom-checkbox" type="checkbox" />
                             </div>
                         </nav>
-                        <div className="p-4 mt-auto border-t border-white/5 w-full nav-footer">
+                        <div className="p-4 mt-auto border-t border-white/5 w-full nav-footer space-y-2">
                             <button className="sidebar-footer-btn w-full h-11 flex items-center gap-3 bg-slate-800/30 hover:bg-red-500/10 hover:text-red-400 text-slate-400 rounded-lg transition-all font-bold text-[11px] uppercase tracking-wider">
                                 <span className="material-symbols-outlined text-lg">delete_forever</span>
                                 <span className="expanded-content">Clear Records</span>
+                            </button>
+                            <button
+                                onClick={handleLogout}
+                                className="sidebar-footer-btn w-full h-11 flex items-center gap-3 bg-slate-800/30 hover:bg-blue-500/10 hover:text-blue-400 text-slate-400 rounded-lg transition-all font-bold text-[11px] uppercase tracking-wider"
+                            >
+                                <span className="material-symbols-outlined text-lg">logout</span>
+                                <span className="expanded-content">Logout</span>
                             </button>
                         </div>
                     </div>

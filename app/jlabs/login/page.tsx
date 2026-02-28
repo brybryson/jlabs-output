@@ -1,15 +1,43 @@
 "use client";
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Login() {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsAuthenticating(true);
-    setTimeout(() => setIsAuthenticating(false), 2000);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Successful login
+        router.push('/jlabs/home');
+      } else {
+        setError(data.message || 'Authentication failed');
+      }
+    } catch (err) {
+      setError('An error occurred. Please try again later.');
+    } finally {
+      setIsAuthenticating(false);
+    }
   };
 
   return (
@@ -45,6 +73,8 @@ export default function Login() {
               <p className="text-slate-400 text-sm md:text-base font-medium">Authenticate to access the hub.</p>
             </div>
 
+
+
             <form className="space-y-6 relative z-10" onSubmit={handleLogin}>
               <div className="space-y-3">
                 <div className="flex justify-between items-center ml-1">
@@ -56,7 +86,7 @@ export default function Login() {
                   </div>
                   <input
                     className="w-full bg-black/20 border border-white/10 rounded-2xl py-4 md:py-5 pl-14 pr-5 text-lg text-white placeholder:text-slate-600 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 outline-none transition-all focus:bg-white/[0.03]"
-                    id="email" placeholder="name@example.com" type="email" required />
+                    id="email" placeholder="name@example.com" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
                 </div>
               </div>
 
@@ -70,15 +100,20 @@ export default function Login() {
                   </div>
                   <input
                     className="w-full bg-black/20 border border-white/10 rounded-2xl py-4 md:py-5 pl-14 pr-14 text-lg text-white placeholder:text-slate-600 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 outline-none transition-all focus:bg-white/[0.03]"
-                    id="password" placeholder="••••••••" type={showPassword ? "text" : "password"} required />
+                    id="password" placeholder="••••••••" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required />
                   <button className="absolute inset-y-0 right-5 flex items-center text-slate-500 hover:text-slate-300 transition-colors" type="button" onClick={() => setShowPassword(!showPassword)}>
                     <span className="material-symbols-outlined text-2xl">{showPassword ? "visibility_off" : "visibility"}</span>
                   </button>
                 </div>
-                <div className="flex justify-end pr-2 pt-1">
-                  <a className="text-xs md:text-sm font-semibold text-blue-400 hover:text-blue-300 transition-colors" href="#">Forgot Password?</a>
-                </div>
+
               </div>
+
+              {error && (
+                <div className="mb-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                  <span className="material-symbols-outlined text-xl">error</span>
+                  {error}
+                </div>
+              )}
 
               <button disabled={isAuthenticating} className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white h-16 md:h-18 rounded-2xl font-bold text-lg transition-all shadow-lg shadow-blue-900/40 flex items-center justify-center gap-3 relative overflow-hidden group/btn disabled:opacity-70 disabled:cursor-not-allowed">
                 {isAuthenticating ? (
